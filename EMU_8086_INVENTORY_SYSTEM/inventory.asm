@@ -37,12 +37,18 @@
     TAKEN_LIST          DB MAX_ITEM_COUNT DUP (0)
     
     ;MENU OPTIONS
-    MENU_TEXT          DB 'Options:', 0Dh, 0Ah, '[1] Add Stock', 0Dh, 0Ah,
-                       DB   '[2] Update Stock', 0Dh, 0Ah, 
-                       DB   '[3] Display Inventory', 0Dh, 0Ah,
+    MENU_TEXT          DB 'Options:', 0DH, 0AH, '[1] Add Stock', 0DH, 0AH,
+                       DB   '[2] Update Stock', 0DH, 0AH, 
+                       DB   '[3] Display Inventory', 0DH, 0AH,
                        DB   '[4] Remove Stock ', 0DH, 0AH, 
-                       DB   '[5] Exit', 0Dh, 0Ah,
-                       DB    0Dh, 0Ah, 'Enter your choice: $'
+                       DB   '[5] Exit', 0DH, 0AH,
+                       DB    0DH, 0AH, 'Enter your choice: $'
+    
+    UPDATE_TEXT        DB 'Choose data to update:', 0DH, 0AH,
+                       DB '[1] ITEM ID', 0DH, 0AH,
+                       DB '[2] ITEM NAME', 0DH, 0AH,
+                       DB '[3] ITEM QTY', 0DH, 0AH,
+                       DB 'CHOICE: $'
                            
     PROMPT_NAME        DB 0Dh, 0Ah, 'Enter ITEM: $'
     PROMPT_ID          DB 0Dh, 0Ah, 'Enter ITEM ID: $'
@@ -103,6 +109,15 @@
         RET
     CLEAR_OLD_DATA ENDP
     
+    UPDATE_MENU_PROMPT PROC
+        
+        MOV AH, 09H
+        LEA DX, UPDATE_TEXT
+        INT 21H
+        
+        RET
+    UPDATE_MENU_PROMPT ENDP
+    
     NAME_PROMPT PROC
         
         MOV AH, 09H
@@ -144,13 +159,13 @@
       
     ;INPUTS
     
-    INPUT_PRMPT PROC
+    INPUT_PROMPT PROC
         
         MOV AH, 01H
         INT 21H
         
         RET
-    INPUT_PRMPT ENDP
+    INPUT_PROMPT ENDP
     
     INPUT_ITEM_DATA PROC
         
@@ -484,6 +499,9 @@
     
     UPDATE_ITEM_DATA PROC
         
+        MOV AX, 03H
+        INT 10H
+           
         CALL NAME_PROMPT
         
         ;PARAM
@@ -532,71 +550,100 @@
         MOV CURRENT_SLOT, BL
         CALL DISPLAY_SLOT
         
-        ;PARAM
-        MOV AH, 09H
-        LEA DX, PROMPT_NEW_NAME
-        INT 21H
+        CALL NEW_LINE
+         
+        CALL UPDATE_MENU_PROMPT
+        CALL INPUT_PROMPT
         
-        MOV AH, 0
-        MOV AX, SEARCH_IND
+        CALL NEW_LINE
         
-        MOV BH, 0
-        MOV BL, MAX_NAME_SIZE
+        MOV CHOICE, AL
         
-        MUL BX
+        CMP CHOICE, 31H
+        JMP UPDATE_ID
+        CMP CHOICE, 32H
+        JMP UPDATE_NAME
+        CMP CHOICE, 33H
+        JMP UPDATE_QTY
         
-        MOV CX, 0
-        MOV CL, MAX_NAME_SIZE
+        JMP END_UPDATE 
         
-        MOV SI, OFFSET ITEM_NAMES
-        ADD SI, AX
+        UPDATE_ID:
+            ;PARAM
+            MOV AH, 09H
+            LEA DX, PROMPT_NEW_ID
+            INT 21H
+            
+            MOV AH, 0
+            MOV AX, SEARCH_IND
+            
+            MOV BH, 0
+            MOV BL, MAX_ID_SIZE
+            
+            MUL BX
+            
+            MOV CX, 0
+            MOV CL, MAX_ID_SIZE
+            
+            MOV SI, OFFSET ITEM_IDS
+            ADD SI, AX
+            
+            CALL INPUT_ITEM_DATA
+            CALL CLEAR_OLD_DATA
         
-        CALL INPUT_ITEM_DATA 
-        CALL CLEAR_OLD_DATA
+        JMP END_UPDATE
         
-        ;PARAM
-        MOV AH, 09H
-        LEA DX, PROMPT_NEW_ID
-        INT 21H
+        UPDATE_NAME:
         
-        MOV AH, 0
-        MOV AX, SEARCH_IND
+            ;PARAM
+            MOV AH, 09H
+            LEA DX, PROMPT_NEW_NAME
+            INT 21H
+            
+            MOV AH, 0
+            MOV AX, SEARCH_IND
+            
+            MOV BH, 0
+            MOV BL, MAX_NAME_SIZE
+            
+            MUL BX
+            
+            MOV CX, 0
+            MOV CL, MAX_NAME_SIZE
+            
+            MOV SI, OFFSET ITEM_NAMES
+            ADD SI, AX
+            
+            CALL INPUT_ITEM_DATA 
+            CALL CLEAR_OLD_DATA
         
-        MOV BH, 0
-        MOV BL, MAX_ID_SIZE
+        JMP END_UPDATE
         
-        MUL BX
+        UPDATE_QTY:
         
-        MOV CX, 0
-        MOV CL, MAX_ID_SIZE
+            ;PARAM
+            MOV AH, 09H
+            LEA DX, PROMPT_NEW_QTY
+            INT 21H
+            
+            MOV AH, 0
+            MOV AX, SEARCH_IND
+            
+            MOV BH, 0
+            MOV BL, MAX_QTY_SIZE
+            
+            MUL BX
+            
+            MOV CX, 0
+            MOV CL, MAX_QTY_SIZE
+            
+            MOV SI, OFFSET ITEM_QTY
+            ADD SI, AX
+            
+            CALL INPUT_ITEM_DATA  
+            CALL CLEAR_OLD_DATA
         
-        MOV SI, OFFSET ITEM_IDS
-        ADD SI, AX
-        
-        CALL INPUT_ITEM_DATA
-        CALL CLEAR_OLD_DATA
-        
-        ;PARAM
-        MOV AH, 09H
-        LEA DX, PROMPT_NEW_QTY
-        INT 21H
-        
-        MOV AH, 0
-        MOV AX, SEARCH_IND
-        
-        MOV BH, 0
-        MOV BL, MAX_QTY_SIZE
-        
-        MUL BX
-        
-        MOV CX, 0
-        MOV CL, MAX_QTY_SIZE
-        
-        MOV SI, OFFSET ITEM_QTY
-        ADD SI, AX
-        
-        CALL INPUT_ITEM_DATA
-        CALL CLEAR_OLD_DATA
+        END_UPDATE:
                         
         MOV CURRENT_SLOT, 0
         
@@ -757,7 +804,7 @@
              
             CALL MENU
             
-            CALL INPUT_PRMPT
+            CALL INPUT_PROMPT
             
             MOV CHOICE, AL
             
