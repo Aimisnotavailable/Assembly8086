@@ -20,6 +20,8 @@
     EMPTY_REGISTRY_MSG DB 'THE INVENTORY IS EMPTY$'
     FULL_LOT_MSG DB 'THE INVENTORY IS FULL$'
     
+    ALREADY_EXIST_MSG DB 'ITEM ALREADY EXIST$'
+    
     ITEM_PRINTED DB 0
     ITEM_SEARCHED DB 0
     
@@ -353,6 +355,43 @@
         RET
     DISPLAY_SLOT ENDP
     
+    CHECK_ID PROC
+        
+        MOV AH, 0
+        MOV AL, AVAILABLE_SLOT
+        
+        MOV BH, 0
+        MOV BL, MAX_ID_SIZE
+        
+        MUL BX
+        MOV SI, OFFSET ITEM_IDS
+        ADD SI, AX
+        
+        MOV CX, 0
+        MOV CL, MAX_ID_SIZE
+        
+        MOV BX, 0
+        
+        COPY_INPT:
+        
+            CMP [SI], 42
+            JE END_COPY
+            
+            MOV DL, [SI]
+            MOV SEARCH_ID[BX], DL
+            
+            INC BX
+            INC SI
+            
+            LOOP COPY_INPT
+        
+        END_COPY:
+        
+        CALL SEARCH_ITEM
+        
+        RET
+    CHECK_ID ENDP
+       
     INPUT_ITEM_DATAS PROC
                 
         MOV  CURRENT_SLOT, AL
@@ -360,27 +399,6 @@
         CALL DISPLAY_SLOT
         MOV  CURRENT_SLOT, 0
         CALL NEW_LINE
-        
-        ;PARAM
-        MOV AH, 09H
-        LEA DX, PROMPT_NAME
-        INT 21H
-        
-        MOV AH, 0
-        MOV AL, AVAILABLE_SLOT
-        
-        MOV BH, 0
-        MOV BL, MAX_NAME_SIZE
-        
-        MUL BX
-        
-        MOV CX, 0
-        MOV CL, MAX_NAME_SIZE
-        
-        MOV SI, OFFSET ITEM_NAMES
-        ADD SI, AX
-        
-        CALL INPUT_ITEM_DATA
         
         ;PARAM
         
@@ -402,6 +420,33 @@
         MOV SI, OFFSET ITEM_IDS
         ADD SI, AX
           
+        CALL INPUT_ITEM_DATA
+        
+        CALL CHECK_ID
+        
+        MOV AL, 1
+        AND AL, FOUND
+        JNZ ID_ALREADY_EXIST
+        
+        ;PARAM
+        MOV AH, 09H
+        LEA DX, PROMPT_NAME
+        INT 21H
+        
+        MOV AH, 0
+        MOV AL, AVAILABLE_SLOT
+        
+        MOV BH, 0
+        MOV BL, MAX_NAME_SIZE
+        
+        MUL BX
+        
+        MOV CX, 0
+        MOV CL, MAX_NAME_SIZE
+        
+        MOV SI, OFFSET ITEM_NAMES
+        ADD SI, AX
+        
         CALL INPUT_ITEM_DATA
         
         ;PARAM
@@ -747,7 +792,6 @@
             
             UPDATE_ITEM_DATA_LABEL:
                 
-                
                 CMP  CURRENT_ITEM_COUNT, 0
                 JE   EMPTY_REGISTRY
                 
@@ -766,6 +810,9 @@
             PRINT_ITEM_DATA_LABEL:
                 
                 CALL NEW_LINE
+                
+                MOV AX, 03H
+                INT 10H
             
                 CMP  CURRENT_ITEM_COUNT, 0
                 JE   EMPTY_REGISTRY                          
@@ -792,6 +839,33 @@
                 JMP MENU_INTERFACE
                 
         
+        ID_ALREADY_EXIST:
+            CALL NEW_LINE
+            
+            MOV AH, 09H
+            LEA DX, ALREADY_EXIST_MSG
+            INT 21H
+            
+            MOV AH, 01H
+            INT 21H
+            
+            MOV AH, 0
+            MOV AL, AVAILABLE_SLOT
+        
+            MOV BX, 0
+            MOV BX, MAX_ID_SIZE
+            MUL BX
+           
+            MOV SI, OFFSET ITEM_IDS
+            ADD SI, AX
+            
+            CALL DELETE_ITEM_DATA
+            
+            MOV FOUND, 0
+            MOV SEARCH_IND, 0
+            
+            JMP MENU_INTERFACE
+            
         NOT_FOUND:
             CALL NEW_LINE
             
