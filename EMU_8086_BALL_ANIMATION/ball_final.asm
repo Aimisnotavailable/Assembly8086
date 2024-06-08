@@ -61,16 +61,7 @@
         RET
     DISPLAY_ROOF ENDP
     
-    DISPLAY_BALL PROC 
-        
-        MOV AH, 02H 
-        MOV DH, POS_Y
-        MOV DL, POS_X
-        INT 10H
-        
-        ;BALL       
-        MOV DL, 42 
-        INT 21H
+    CALCULATE_BALL_POS PROC 
         
         CMP POS_Y, MAX_Y
         JE  UP
@@ -129,7 +120,7 @@
      
         
         RET 
-    DISPLAY_BALL ENDP
+    CALCULATE_BALL_POS ENDP
     
     DISPLAY_FLOOR PROC
         
@@ -145,14 +136,21 @@
         RET
     DISPLAY_FLOOR ENDP
     
-    DISPLAY_WALL_L PROC
-        MOV AH, 02H
-        MOV DH, WL_Y
-        MOV DL, MIN - 1
+    DISPLAY_BALL PROC
+        
+        MOV AH, 02H 
+        MOV DH, POS_Y
+        MOV DL, POS_X
         INT 10H
         
-        MOV DL, WALL_LEFT
+        ;BALL       
+        MOV DL, 42 
         INT 21H
+        
+        RET
+    DISPLAY_BALL ENDP
+    
+    CALCULATE_WALL_L_POS PROC
         
         MOV AL, 1
         AND AL, DIR_X
@@ -178,17 +176,23 @@
             INC WL_Y
         
         END_DWL:
+        
+        RET
+    CALCULATE_WALL_L_POS ENDP
+    
+    DISPLAY_WALL_L PROC
+        MOV AH, 02H
+        MOV DH, WL_Y
+        MOV DL, MIN - 1
+        INT 10H
+        
+        MOV DL, WALL_LEFT
+        INT 21H
+        
         RET
     DISPLAY_WALL_L ENDP
     
-    DISPLAY_WALL_R PROC
-        MOV AH, 02H
-        MOV DH, WR_Y
-        MOV DL, MAX_X
-        INT 10H
-        
-        MOV DL, WALL_RIGHT
-        INT 21H
+    CALCULATE_WALL_R_POS PROC
         
         MOV AL, 1
         AND AL, DIR_X
@@ -214,6 +218,19 @@
             INC WR_Y
         
         END_DWR:
+        
+        RET
+    CALCULATE_WALL_R_POS ENDP
+    
+    DISPLAY_WALL_R PROC
+        MOV AH, 02H
+        MOV DH, WR_Y
+        MOV DL, MAX_X
+        INT 10H
+        
+        MOV DL, WALL_RIGHT
+        INT 21H
+        
         RET
     DISPLAY_WALL_R ENDP
     
@@ -289,13 +306,17 @@
         
         MOV CX, 1
         MOVE:
+           
             CALL DISPLAY_ROOF
             CALL DISPLAY_FLOOR
             CALL DISPLAY_WALL_L
             CALL DISPLAY_WALL_R
             
-
             CALL DISPLAY_BALL
+            
+            CALL CALCULATE_BALL_POS
+            CALL CALCULATE_WALL_L_POS
+            CALL CALCULATE_WALL_R_POS
             
             MOV AL, 1
             AND AL, MODE
