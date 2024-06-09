@@ -1,4 +1,3 @@
-
 .MODEL SMALL 
 
 .DATA
@@ -22,20 +21,25 @@
     
     ALREADY_EXIST_MSG DB 'ITEM ALREADY EXIST$'
     
-    SHELF DB  ' ', MAX_NAME_SIZE DUP('='),     0DH, 0AH,
-          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
-          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
-          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
-          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
-          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
-          DB  ' ', MAX_NAME_SIZE DUP('='), '$',0DH, 0AH
-    
-    ITEM_PRINTED DB 0
-    ITEM_SEARCHED DB 0
+    SHELF DB  ' ', MAX_NAME_SIZE + 8 DUP('='),     0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+          DB  ' ', MAX_NAME_SIZE + 8 DUP('='), '$',0DH, 0AH
+
+        
+    SHELF_ROW DB 2
+    SHELF_COL EQU 2
     
     ;COUNTERS
     CURRENT_ITEM_COUNT DB 0
     COUNTER DW 0
+    
+    ITEM_PRINTED DB 0
+    ITEM_SEARCHED DB 0
     
     ;STORAGE
     ITEM_NAMES          DB MAX_NAME_SIZE * MAX_ITEM_COUNT DUP('*')
@@ -45,10 +49,10 @@
     TAKEN_LIST          DB MAX_ITEM_COUNT DUP (0)
     
     ;MENU OPTIONS
-    MENU_TEXT          DB 'Options:', 0DH, 0AH, '[1] Add Stock', 0DH, 0AH,
-                       DB   '[2] Update Stock', 0DH, 0AH, 
+    MENU_TEXT          DB 'Options:', 0DH, 0AH, '[1] Add Item', 0DH, 0AH,
+                       DB   '[2] Update Item', 0DH, 0AH, 
                        DB   '[3] Display Inventory', 0DH, 0AH,
-                       DB   '[4] Remove Stock ', 0DH, 0AH, 
+                       DB   '[4] Remove Item ', 0DH, 0AH, 
                        DB   '[5] Exit', 0DH, 0AH,
                        DB    0DH, 0AH, 'Enter your choice: $'
     
@@ -98,6 +102,7 @@
         CLEAR_LOOP:
             MOV DL, [SI]
             MOV [SI], 42
+            MOV DL, [SI]
             INC SI
             LOOP CLEAR_LOOP 
         RET
@@ -430,6 +435,8 @@
         
         CALL CHECK_ID
         
+        CALL CLEAR_UTILS
+        
         MOV AL, 1
         AND AL, FOUND
         JNZ ID_ALREADY_EXIST
@@ -651,18 +658,28 @@
     PRINT_ITEM_DATAS PROC
         
         MOV CX, 0
-        
-        MOV AH, 9H
-        LEA DX, SHELF
-        INT 21H
               
         PRINT_LOOP:
+            MOV AH, 9H
+            LEA DX, SHELF
+            INT 21H
+            CALL NEW_LINE
+            
             MOV SI, OFFSET TAKEN_LIST
             ADD SI, CX
             CMP [SI], 0
-            JE  CONTINUE_PRINT
+            JE  EMPTY_SHELF
+            
+            ; MOVE CURSOR
+            MOV AH, 02H
+            MOV DH, SHELF_ROW
+            MOV DL, SHELF_COL
+            INT 10H
+            
+            INC SHELF_ROW
             
             CALL NAME_PROMPT
+            
             ;PARAM
             MOV AX, 0
             
@@ -675,13 +692,15 @@
             MOV SI, OFFSET ITEM_NAMES
             ADD SI, AX
             
-            MOV DH, 1
-            MOV DL, 2
-            INT 10H
-            
             CALL PRINT_ITEM_DATA
             
-            CALL NEW_LINE
+            ; MOVE CURSOR
+            MOV AH, 02H
+            MOV DH, SHELF_ROW
+            MOV DL, SHELF_COL
+            INT 10H
+            
+            INC SHELF_ROW
             
             CALL ID_PROMPT
             
@@ -698,7 +717,13 @@
             
             CALL PRINT_ITEM_DATA
             
-            CALL NEW_LINE
+            ; MOVE CURSOR
+            MOV AH, 02H
+            MOV DH, SHELF_ROW
+            MOV DL, SHELF_COL
+            INT 10H
+            
+            INC SHELF_ROW
             
             ;PARAM
             
@@ -716,17 +741,30 @@
             
             CALL PRINT_ITEM_DATA
             
-            CALL NEW_LINE
+            ; MOVE CURSOR
+            MOV AH, 02H
+            MOV DH, SHELF_ROW
+            MOV DL, SHELF_COL
+            INT 10H
+            
+            INC SHELF_ROW
             
             CALL DISPLAY_SLOT
             
             INC ITEM_PRINTED
             CALL NEW_LINE
             CALL NEW_LINE
+            JMP CONTINUE_PRINT
             
+            EMPTY_SHELF:
+                
+                ADD SHELF_ROW, 5
+                    
             CONTINUE_PRINT:
                  
                 INC CURRENT_SLOT
+                
+                ADD SHELF_ROW, 3
                 
                 MOV CL, CURRENT_SLOT
                 
@@ -735,12 +773,14 @@
                 CMP BL, CURRENT_ITEM_COUNT
                 
             JNE PRINT_LOOP
-        
+            
         MOV ITEM_PRINTED, 0
         MOV CURRENT_SLOT, 0
         
         MOV AH, 01H
         INT 21H
+        
+        MOV SHELF_ROW, 2
         
         RET
     PRINT_ITEM_DATAS ENDP
