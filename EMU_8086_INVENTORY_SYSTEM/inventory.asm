@@ -22,6 +22,14 @@
     
     ALREADY_EXIST_MSG DB 'ITEM ALREADY EXIST$'
     
+    SHELF DB  ' ', MAX_NAME_SIZE DUP('='),     0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
+          DB  '|', MAX_NAME_SIZE DUP(' '),'|', 0DH, 0AH,
+          DB  ' ', MAX_NAME_SIZE DUP('='), '$',0DH, 0AH
+    
     ITEM_PRINTED DB 0
     ITEM_SEARCHED DB 0
     
@@ -186,23 +194,6 @@
         
         RET
     INPUT_ITEM_DATA ENDP
-    
-    PRINT_ITEM_DATA PROC 
-        MOV AH, 02H    
-        PRINT_DATA:
-            MOV DL, [SI]
-            
-            CMP DL, 42
-            JE  END_PSD
-            
-            INT 21H
-            INC SI
-            
-            JMP PRINT_DATA
-            
-        END_PSD:    
-        RET
-    PRINT_ITEM_DATA ENDP
     
     SEARCH_PROMPT PROC
         MOV AH, 09H
@@ -660,7 +651,11 @@
     PRINT_ITEM_DATAS PROC
         
         MOV CX, 0
-                 
+        
+        MOV AH, 9H
+        LEA DX, SHELF
+        INT 21H
+              
         PRINT_LOOP:
             MOV SI, OFFSET TAKEN_LIST
             ADD SI, CX
@@ -679,6 +674,11 @@
             
             MOV SI, OFFSET ITEM_NAMES
             ADD SI, AX
+            
+            MOV DH, 1
+            MOV DL, 2
+            INT 10H
+            
             CALL PRINT_ITEM_DATA
             
             CALL NEW_LINE
@@ -744,6 +744,23 @@
         
         RET
     PRINT_ITEM_DATAS ENDP
+    
+    PRINT_ITEM_DATA PROC
+        MOV AH, 02H    
+        PRINT_DATA:
+            MOV DL, [SI]
+            
+            CMP DL, 42
+            JE  END_PSD
+            
+            INT 21H
+            INC SI
+            
+            JMP PRINT_DATA
+            
+        END_PSD:    
+        RET
+    PRINT_ITEM_DATA ENDP
     
     REMOVE_ITEM PROC
             
