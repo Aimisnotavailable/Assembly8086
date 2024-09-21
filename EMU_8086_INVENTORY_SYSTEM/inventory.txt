@@ -553,16 +553,16 @@
         CALL UPDATE_MENU_PROMPT
         CALL INPUT_PROMPT
         
+        CALL NEW_LINE
+        
         MOV CHOICE, AL
         
-        CALL NEW_LINE
-         
         CMP CHOICE, 31H
-        JE UPDATE_ID
+        JMP UPDATE_ID
         CMP CHOICE, 32H
-        JE UPDATE_NAME
+        JMP UPDATE_NAME
         CMP CHOICE, 33H
-        JE UPDATE_QTY
+        JMP UPDATE_QTY
         
         JMP END_UPDATE 
         

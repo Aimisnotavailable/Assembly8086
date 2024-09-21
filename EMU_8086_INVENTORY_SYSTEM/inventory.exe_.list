@@ -1,0 +1,1144 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+inventory.exe_ -- emu8086 assembler version: 4.08  
+ 
+[ 21/09/2024  --  4:00:52 pm ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       .MODEL SMALL
+[   2]        :                                       
+[   3]        :                                       .DATA
+[   4]        :                                       
+[   5]        :                                       ;CONSTANT UTILS
+[   6]        :                                       MAX_NAME_SIZE   EQU 40
+[   7]        :                                       MAX_ID_SIZE     EQU 10
+[   8]        :                                       MAX_ITEM_COUNT  EQU 3
+[   9]        :                                       MAX_QTY_SIZE    EQU 5
+[  10]        :                                       
+[  11]        :                                       ;UTILS
+[  12]    0000: 49 54 45 4D 3A 20 24                  NAME_MSG DB 'ITEM: $'
+[  13]    0007: 49 44 3A 20 24                        ID_MSG DB 'ID: $'
+[  14]    000C: 51 54 59 3A 20 24                     QTY_MSG DB 'QTY : $'
+[  15]    0012: 53 4C 4F 54 3A 20 24                  SLOT_MSG DB 'SLOT: $'
+[  16]    0019: 49 54 45 4D 20 4E 4F 54 20 46 4F 55   NOT_FOUND_MSG DB 'ITEM NOT FOUND$'
+                4E 44 24                            
+[  17]    0028: 49 54 45 4D 20 44 45 4C 45 54 45 44   ITEM_DELETED_MSG DB 'ITEM DELETED$'
+                24                                  
+[  18]        :                                       
+[  19]    0035: 54 48 45 20 49 4E 56 45 4E 54 4F 52   EMPTY_REGISTRY_MSG DB 'THE INVENTORY IS EMPTY$'
+                59 20 49 53 20 45 4D 50 54 59 24    
+[  20]    004C: 54 48 45 20 49 4E 56 45 4E 54 4F 52   FULL_LOT_MSG DB 'THE INVENTORY IS FULL$'
+                59 20 49 53 20 46 55 4C 4C 24       
+[  21]        :                                       
+[  22]    0062: 49 54 45 4D 20 41 4C 52 45 41 44 59   ALREADY_EXIST_MSG DB 'ITEM ALREADY EXIST$'
+                20 45 58 49 53 54 24                
+[  23]        :                                       
+[  24]    0075: 20 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D   SHELF DB  ' ', MAX_NAME_SIZE + 8 DUP('='),     0DH, 0AH,
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 0D 0A                            
+[  25]    00A8: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  26]    00DC: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  27]    0110: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  28]    0144: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  29]    0178: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  30]    01AC: 7C 20 20 20 20 20 20 20 20 20 20 20   DB  '|', MAX_NAME_SIZE + 8 DUP(' '),'|', 0DH, 0AH,
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 7C 0D 0A                         
+[  31]    01E0: 20 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D   DB  ' ', MAX_NAME_SIZE + 8 DUP('='), '$',0DH, 0AH
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 3D 
+                3D 24 0D 0A                         
+[  32]        :                                       
+[  33]        :                                       
+[  34]    0214: 02                                    SHELF_ROW DB 2
+[  35]        :                                       SHELF_COL EQU 2
+[  36]        :                                       
+[  37]        :                                       ;COUNTERS
+[  38]    0215: 00                                    CURRENT_ITEM_COUNT DB 0
+[  39]    0216: 00 00                                 COUNTER DW 0
+[  40]        :                                       
+[  41]    0218: 00                                    ITEM_PRINTED DB 0
+[  42]    0219: 00                                    ITEM_SEARCHED DB 0
+[  43]        :                                       
+[  44]        :                                       ;STORAGE
+[  45]    021A: 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A   ITEM_NAMES          DB MAX_NAME_SIZE * MAX_ITEM_COUNT DUP('*')
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                                                    
+[  46]    0292: 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A   ITEM_IDS            DB MAX_ID_SIZE * MAX_ITEM_COUNT DUP('*')
+                2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 
+                2A 2A 2A 2A 2A 2A                   
+[  47]    02B0: 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A   ITEM_QTY            DB MAX_QTY_SIZE * MAX_ITEM_COUNT DUP('*')
+                2A 2A 2A                            
+[  48]    02BF: 2A 2A 2A 2A 2A 2A 2A 2A 2A 2A         SEARCH_ID           DB MAX_ID_SIZE DUP ('*')
+[  49]    02C9: 00 00 00                              TAKEN_LIST          DB MAX_ITEM_COUNT DUP (0)
+[  50]        :                                       
+[  51]        :                                       ;MENU OPTIONS
+[  52]    02CC: 4F 70 74 69 6F 6E 73 3A 0D 0A 5B 31   MENU_TEXT          DB 'Options:', 0DH, 0AH, '[1] Add Item', 0DH, 0AH,
+                5D 20 41 64 64 20 49 74 65 6D 0D 0A 
+                                                    
+[  53]    02E4: 5B 32 5D 20 55 70 64 61 74 65 20 49   DB   '[2] Update Item', 0DH, 0AH,
+                74 65 6D 0D 0A                      
+[  54]    02F5: 5B 33 5D 20 44 69 73 70 6C 61 79 20   DB   '[3] Display Inventory', 0DH, 0AH,
+                49 6E 76 65 6E 74 6F 72 79 0D 0A    
+[  55]    030C: 5B 34 5D 20 52 65 6D 6F 76 65 20 49   DB   '[4] Remove Item ', 0DH, 0AH,
+                74 65 6D 20 0D 0A                   
+[  56]    031E: 5B 35 5D 20 45 78 69 74 0D 0A         DB   '[5] Exit', 0DH, 0AH,
+[  57]    0328: 0D 0A 45 6E 74 65 72 20 79 6F 75 72   DB    0DH, 0AH, 'Enter your choice: $'
+                20 63 68 6F 69 63 65 3A 20 24       
+[  58]        :                                       
+[  59]    033E: 43 68 6F 6F 73 65 20 64 61 74 61 20   UPDATE_TEXT        DB 'Choose data to update:', 0DH, 0AH,
+                74 6F 20 75 70 64 61 74 65 3A 0D 0A 
+                                                    
+[  60]    0356: 5B 31 5D 20 49 54 45 4D 20 49 44 0D   DB '[1] ITEM ID', 0DH, 0AH,
+                0A                                  
+[  61]    0363: 5B 32 5D 20 49 54 45 4D 20 4E 41 4D   DB '[2] ITEM NAME', 0DH, 0AH,
+                45 0D 0A                            
+[  62]    0372: 5B 33 5D 20 49 54 45 4D 20 51 54 59   DB '[3] ITEM QTY', 0DH, 0AH,
+                0D 0A                               
+[  63]    0380: 43 48 4F 49 43 45 3A 20 24            DB 'CHOICE: $'
+[  64]        :                                       
+[  65]    0389: 0D 0A 45 6E 74 65 72 20 49 54 45 4D   PROMPT_NAME        DB 0Dh, 0Ah, 'Enter ITEM: $'
+                3A 20 24                            
+[  66]    0398: 0D 0A 45 6E 74 65 72 20 49 54 45 4D   PROMPT_ID          DB 0Dh, 0Ah, 'Enter ITEM ID: $'
+                20 49 44 3A 20 24                   
+[  67]    03AA: 0D 0A 45 6E 74 65 72 20 49 54 45 4D   PROMPT_QTY          DB 0Dh, 0Ah, 'Enter ITEM QTY: $'
+                20 51 54 59 3A 20 24                
+[  68]        :                                       
+[  69]    03BD: 0D 0A 45 6E 74 65 72 20 6E 65 77 20   PROMPT_NEW_NAME        DB 0Dh, 0Ah, 'Enter new ITEM NAME: $'
+                49 54 45 4D 20 4E 41 4D 45 3A 20 24 
+                                                    
+[  70]    03D5: 0D 0A 45 6E 74 65 72 20 6E 65 77 20   PROMPT_NEW_ID          DB 0Dh, 0Ah, 'Enter new ITEM ID: $'
+                49 54 45 4D 20 49 44 3A 20 24       
+[  71]    03EB: 0D 0A 45 6E 74 65 72 20 6E 65 77 20   PROMPT_NEW_QTY          DB 0Dh, 0Ah, 'Enter new ITEM QTY: $'
+                49 54 45 4D 20 51 54 59 3A 20 24    
+[  72]        :                                       
+[  73]    0402: 0D 0A 45 6E 74 65 72 20 49 54 45 4D   PROMPT_SEARCH_ID   DB 0Dh, 0Ah, 'Enter ITEM ID to search: $'
+                20 49 44 20 74 6F 20 73 65 61 72 63 
+                68 3A 20 24                         
+[  74]        :                                       
+[  75]    041E: 00                                    CHOICE DB ?
+[  76]    041F: 00                                    FOUND DB 0
+[  77]    0420: 00 00                                 NEXT DW ?
+[  78]    0422: 00 00                                 SEARCH_IND DW 0
+[  79]    0424: 00                                    SLOT_SIZE DB 0
+[  80]    0425: 00                                    CURRENT_SLOT DB 0
+[  81]        :                                       
+[  82]    0426: 00                                    AVAILABLE_SLOT DB 0
+[  83]        :                                       
+[  84]        :                                       .CODE
+[  85]        :                                       
+[  86]        :                                       ;UTILS
+[  87]    0430:                                       NEW_LINE PROC
+[  88]    0430: B4 02                                 MOV AH, 02H
+[  89]    0432: B2 0A                                 MOV DL, 10
+[  90]    0434: CD 21                                 INT 21H
+[  91]        :                                       
+[  92]    0436: B2 0D                                 MOV DL, 13
+[  93]    0438: CD 21                                 INT 21H
+[  94]    043A: C3                                    RET
+[  95]        :                                       NEW_LINE ENDP
+[  96]        :                                       
+[  97]    043B:                                       CLEAR_UTILS PROC
+[  98]        :                                       
+[  99]    043B: B9 0A 00                              MOV CX, 10
+[ 100]    043E: BE BF 02                              MOV SI, OFFSET SEARCH_ID
+[ 101]        :                                       
+[ 102]    0441:                                       CLEAR_LOOP:
+[ 103]    0441: 8A 14                                 MOV DL, [SI]
+[ 104]    0443: C6 04 2A                              MOV [SI], 42
+[ 105]    0446: 8A 14                                 MOV DL, [SI]
+[ 106]    0448: 46                                    INC SI
+[ 107]    0449: E2 F6                                 LOOP CLEAR_LOOP
+[ 108]    044B: C3                                    RET
+[ 109]        :                                       CLEAR_UTILS ENDP
+[ 110]        :                                       
+[ 111]    044C:                                       CLEAR_OLD_DATA PROC
+[ 112]        :                                       
+[ 113]    044C:                                       CLEAR_DATA:
+[ 114]    044C: 80 3C 2A                              CMP [SI], 42
+[ 115]    044F: 74 06                                 JE END_CLEAR
+[ 116]    0451: C6 04 2A                              MOV [SI], 42
+[ 117]    0454: 46                                    INC SI
+[ 118]    0455: E2 F5                                 LOOP CLEAR_DATA
+[ 119]        :                                       
+[ 120]    0457:                                       END_CLEAR:
+[ 121]        :                                       
+[ 122]    0457: C3                                    RET
+[ 123]        :                                       CLEAR_OLD_DATA ENDP
+[ 124]        :                                       
+[ 125]    0458:                                       UPDATE_MENU_PROMPT PROC
+[ 126]        :                                       
+[ 127]    0458: B4 09                                 MOV AH, 09H
+[ 128]    045A: BA 3E 03                              LEA DX, UPDATE_TEXT
+[ 129]    045D: CD 21                                 INT 21H
+[ 130]        :                                       
+[ 131]    045F: C3                                    RET
+[ 132]        :                                       UPDATE_MENU_PROMPT ENDP
+[ 133]        :                                       
+[ 134]    0460:                                       NAME_PROMPT PROC
+[ 135]        :                                       
+[ 136]    0460: B4 09                                 MOV AH, 09H
+[ 137]    0462: BA 00 00                              LEA DX, NAME_MSG
+[ 138]    0465: CD 21                                 INT 21H
+[ 139]        :                                       
+[ 140]    0467: C3                                    RET
+[ 141]        :                                       NAME_PROMPT ENDP
+[ 142]        :                                       
+[ 143]        :                                       
+[ 144]    0468:                                       ID_PROMPT PROC
+[ 145]        :                                       
+[ 146]    0468: B4 09                                 MOV AH, 09H
+[ 147]    046A: BA 07 00                              LEA DX, ID_MSG
+[ 148]    046D: CD 21                                 INT 21H
+[ 149]        :                                       
+[ 150]    046F: C3                                    RET
+[ 151]        :                                       ID_PROMPT ENDP
+[ 152]        :                                       
+[ 153]    0470:                                       QTY_PROMPT PROC
+[ 154]        :                                       
+[ 155]    0470: B4 09                                 MOV AH, 09H
+[ 156]    0472: BA 0C 00                              LEA DX, QTY_MSG
+[ 157]    0475: CD 21                                 INT 21H
+[ 158]        :                                       
+[ 159]    0477: C3                                    RET
+[ 160]        :                                       QTY_PROMPT ENDP
+[ 161]        :                                       
+[ 162]        :                                       ;DISPLAYS
+[ 163]        :                                       
+[ 164]    0478:                                       MENU PROC
+[ 165]        :                                       
+[ 166]    0478: B4 09                                 MOV AH, 09H
+[ 167]    047A: BA CC 02                              LEA DX, MENU_TEXT
+[ 168]    047D: CD 21                                 INT 21H
+[ 169]        :                                       
+[ 170]    047F: C3                                    RET
+[ 171]        :                                       MENU ENDP
+[ 172]        :                                       
+[ 173]        :                                       ;INPUTS
+[ 174]        :                                       
+[ 175]    0480:                                       INPUT_PROMPT PROC
+[ 176]        :                                       
+[ 177]    0480: B4 01                                 MOV AH, 01H
+[ 178]    0482: CD 21                                 INT 21H
+[ 179]        :                                       
+[ 180]    0484: C3                                    RET
+[ 181]        :                                       INPUT_PROMPT ENDP
+[ 182]        :                                       
+[ 183]    0485:                                       INPUT_ITEM_DATA PROC
+[ 184]        :                                       
+[ 185]    0485: B4 01                                 MOV AH, 01H
+[ 186]        :                                       
+[ 187]    0487:                                       INPUT_LOOP:
+[ 188]    0487: CD 21                                 INT 21H
+[ 189]        :                                       
+[ 190]    0489: 3C 0D                                 CMP AL, 13
+[ 191]    048B: 74 05                                 JE END_INPUT
+[ 192]        :                                       
+[ 193]    048D: 88 04                                 MOV [SI], AL
+[ 194]        :                                       
+[ 195]    048F: 46                                    INC SI
+[ 196]    0490: E2 F5                                 LOOP INPUT_LOOP
+[ 197]        :                                       
+[ 198]    0492:                                       END_INPUT:
+[ 199]        :                                       
+[ 200]    0492: C3                                    RET
+[ 201]        :                                       INPUT_ITEM_DATA ENDP
+[ 202]        :                                       
+[ 203]    0493:                                       SEARCH_PROMPT PROC
+[ 204]    0493: B4 09                                 MOV AH, 09H
+[ 205]    0495: BA 02 04                              LEA DX, PROMPT_SEARCH_ID
+[ 206]    0498: CD 21                                 INT 21H
+[ 207]        :                                       
+[ 208]        :                                       ; PARAM
+[ 209]        :                                       
+[ 210]    049A: B9 00 00                              MOV CX, 0
+[ 211]    049D: B1 0A                                 MOV CL, MAX_ID_SIZE
+[ 212]        :                                       
+[ 213]    049F: BE BF 02                              MOV SI, OFFSET SEARCH_ID
+[ 214]        :                                       
+[ 215]    04A2: E8 E0 FF                              CALL INPUT_ITEM_DATA
+[ 216]        :                                       
+[ 217]    04A5: E8 01 00                              CALL SEARCH_ITEM
+[ 218]    04A8: C3                                    RET
+[ 219]        :                                       SEARCH_PROMPT ENDP
+[ 220]        :                                       
+[ 221]    04A9:                                       SEARCH_ITEM PROC
+[ 222]        :                                       
+[ 223]    04A9: B9 00 00                              MOV CX, 0
+[ 224]        :                                       
+[ 225]    04AC:                                       SEARCH:
+[ 226]    04AC: BE C9 02                              MOV SI, OFFSET TAKEN_LIST
+[ 227]    04AF: 03 36 16 02                           ADD SI, COUNTER
+[ 228]        :                                       
+[ 229]    04B3: B8 03 00                              MOV AX, MAX_ITEM_COUNT
+[ 230]    04B6: 39 06 16 02                           CMP COUNTER, AX
+[ 231]    04BA: 74 48                                 JE  END_SEARCH
+[ 232]        :                                       
+[ 233]    04BC: 80 3C 00                              CMP [SI], 0
+[ 234]    04BF: 74 38                                 JE CONTINUE_SEARCH
+[ 235]        :                                       
+[ 236]    04C1: B4 00                                 MOV AH, 0
+[ 237]    04C3: A0 15 02                              MOV AL, CURRENT_ITEM_COUNT
+[ 238]        :                                       
+[ 239]    04C6: 38 06 19 02                           CMP ITEM_SEARCHED, AL
+[ 240]    04CA: 74 38                                 JE END_SEARCH
+[ 241]        :                                       
+[ 242]    04CC: FE 06 19 02                           INC ITEM_SEARCHED
+[ 243]        :                                       
+[ 244]    04D0: A1 16 02                              MOV AX, COUNTER
+[ 245]        :                                       
+[ 246]    04D3: B7 00                                 MOV BH, 0
+[ 247]    04D5: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 248]    04D7: F7 E3                                 MUL BX
+[ 249]        :                                       
+[ 250]    04D9: 8B D8                                 MOV BX, AX
+[ 251]        :                                       
+[ 252]    04DB: BE BF 02                              MOV SI, OFFSET SEARCH_ID
+[ 253]        :                                       
+[ 254]    04DE: B1 0A                                 MOV CL, MAX_ID_SIZE
+[ 255]        :                                       
+[ 256]    04E0:                                       COMPARE:
+[ 257]    04E0: 8A 04                                 MOV AL, [SI]
+[ 258]        :                                       
+[ 259]    04E2: 8A A7 92 02                           MOV AH, ITEM_IDS[BX]
+[ 260]        :                                       
+[ 261]    04E6: 38 87 92 02                           CMP ITEM_IDS[BX], AL
+[ 262]    04EA: 75 0D                                 JNE CONTINUE_SEARCH
+[ 263]        :                                       
+[ 264]        :                                       
+[ 265]    04EC: 80 BF 92 02 2A                        CMP ITEM_IDS[BX], 42
+[ 266]    04F1: 74 0C                                 JE  FOUND_SEARCH
+[ 267]        :                                       
+[ 268]    04F3: 43                                    INC BX
+[ 269]    04F4: 46                                    INC SI
+[ 270]    04F5: E2 E9                                 LOOP COMPARE
+[ 271]        :                                       
+[ 272]    04F7: EB 06                                 JMP FOUND_SEARCH
+[ 273]        :                                       
+[ 274]    04F9:                                       CONTINUE_SEARCH:
+[ 275]    04F9: FF 06 16 02                           INC COUNTER
+[ 276]    04FD: EB AD                                 JMP SEARCH
+[ 277]        :                                       
+[ 278]    04FF:                                       FOUND_SEARCH:
+[ 279]    04FF: C6 06 1F 04 01                        MOV FOUND, 1
+[ 280]        :                                       
+[ 281]    0504:                                       END_SEARCH:
+[ 282]    0504: 8B 0E 16 02                           MOV CX, COUNTER
+[ 283]    0508: 89 0E 22 04                           MOV SEARCH_IND, CX
+[ 284]    050C: C7 06 16 02 00 00                     MOV COUNTER, 0
+[ 285]    0512: C6 06 19 02 00                        MOV ITEM_SEARCHED, 0
+[ 286]        :                                       
+[ 287]    0517: C3                                    RET
+[ 288]        :                                       SEARCH_ITEM ENDP
+[ 289]        :                                       
+[ 290]    0518:                                       SEARCH_SLOT PROC
+[ 291]    0518: B9 00 00                              MOV CX, 0
+[ 292]    051B: BE C9 02                              MOV SI, OFFSET TAKEN_LIST
+[ 293]        :                                       
+[ 294]    051E:                                       SEARCH_AVAILABLE_SLOT:
+[ 295]    051E: 80 3C 00                              CMP [SI], 0
+[ 296]    0521: 74 0A                                 JE  END_SEARCH_SLOT
+[ 297]        :                                       
+[ 298]    0523: 80 F9 03                              CMP CL, MAX_ITEM_COUNT
+[ 299]    0526: 74 05                                 JE  END_SEARCH_SLOT
+[ 300]    0528: 46                                    INC SI
+[ 301]    0529: FE C1                                 INC CL
+[ 302]    052B: EB F1                                 JMP SEARCH_AVAILABLE_SLOT
+[ 303]        :                                       
+[ 304]    052D:                                       END_SEARCH_SLOT:
+[ 305]        :                                       
+[ 306]    052D: 88 0E 26 04                           MOV AVAILABLE_SLOT, CL
+[ 307]        :                                       
+[ 308]    0531: C3                                    RET
+[ 309]        :                                       SEARCH_SLOT ENDP
+[ 310]        :                                       
+[ 311]    0532:                                       DELETE_ITEM_DATA PROC
+[ 312]        :                                       
+[ 313]    0532:                                       DELETE_LOOP:
+[ 314]    0532: 80 3C 2A                              CMP [SI], 42
+[ 315]    0535: 74 06                                 JE END_D
+[ 316]        :                                       
+[ 317]    0537: C6 04 2A                              MOV [SI], 42
+[ 318]    053A: 46                                    INC SI
+[ 319]    053B: EB F5                                 JMP DELETE_LOOP
+[ 320]        :                                       
+[ 321]    053D:                                       END_D:
+[ 322]        :                                       
+[ 323]    053D: C3                                    RET
+[ 324]        :                                       DELETE_ITEM_DATA ENDP
+[ 325]        :                                       
+[ 326]    053E:                                       DISPLAY_SLOT PROC
+[ 327]        :                                       
+[ 328]    053E: B4 09                                 MOV AH, 09H
+[ 329]    0540: BA 12 00                              LEA DX, SLOT_MSG
+[ 330]    0543: CD 21                                 INT 21H
+[ 331]        :                                       
+[ 332]    0545: B4 00                                 MOV AH, 0
+[ 333]    0547: A0 25 04                              MOV AL, CURRENT_SLOT
+[ 334]    054A: FE C0                                 INC AL
+[ 335]        :                                       
+[ 336]    054C:                                       CONVERT_INT:
+[ 337]        :                                       
+[ 338]    054C: B2 0A                                 MOV DL, 10
+[ 339]        :                                       
+[ 340]    054E: F6 F2                                 DIV DL
+[ 341]        :                                       
+[ 342]    0550: B6 00                                 MOV DH, 0
+[ 343]    0552: 8A D4                                 MOV DL, AH
+[ 344]        :                                       
+[ 345]    0554: 52                                    PUSH DX
+[ 346]        :                                       
+[ 347]    0555: B4 00                                 MOV AH, 0
+[ 348]    0557: FE 06 24 04                           INC SLOT_SIZE
+[ 349]    055B: 3C 00                                 CMP AL, 0
+[ 350]    055D: 75 ED                                 JNE  CONVERT_INT
+[ 351]        :                                       
+[ 352]    055F: 8A 0E 24 04                           MOV CL, SLOT_SIZE
+[ 353]    0563: B4 02                                 MOV AH, 02H
+[ 354]        :                                       
+[ 355]    0565:                                       DISPLAY_INT:
+[ 356]        :                                       
+[ 357]    0565: 5A                                    POP DX
+[ 358]        :                                       
+[ 359]    0566: 80 C2 30                              ADD DL, 48
+[ 360]        :                                       
+[ 361]    0569: CD 21                                 INT 21H
+[ 362]    056B: E2 F8                                 LOOP DISPLAY_INT
+[ 363]        :                                       
+[ 364]    056D: C6 06 24 04 00                        MOV SLOT_SIZE, 0
+[ 365]        :                                       
+[ 366]    0572: C3                                    RET
+[ 367]        :                                       DISPLAY_SLOT ENDP
+[ 368]        :                                       
+[ 369]    0573:                                       CHECK_ID PROC
+[ 370]        :                                       
+[ 371]    0573: B4 00                                 MOV AH, 0
+[ 372]    0575: A0 26 04                              MOV AL, AVAILABLE_SLOT
+[ 373]        :                                       
+[ 374]    0578: B7 00                                 MOV BH, 0
+[ 375]    057A: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 376]        :                                       
+[ 377]    057C: F7 E3                                 MUL BX
+[ 378]    057E: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 379]    0581: 03 F0                                 ADD SI, AX
+[ 380]        :                                       
+[ 381]    0583: B9 00 00                              MOV CX, 0
+[ 382]    0586: B1 0A                                 MOV CL, MAX_ID_SIZE
+[ 383]        :                                       
+[ 384]    0588: BB 00 00                              MOV BX, 0
+[ 385]        :                                       
+[ 386]    058B:                                       COPY_INPT:
+[ 387]        :                                       
+[ 388]    058B: 80 3C 2A                              CMP [SI], 42
+[ 389]    058E: 74 0A                                 JE END_COPY
+[ 390]        :                                       
+[ 391]    0590: 8A 14                                 MOV DL, [SI]
+[ 392]    0592: 88 97 BF 02                           MOV SEARCH_ID[BX], DL
+[ 393]        :                                       
+[ 394]    0596: 43                                    INC BX
+[ 395]    0597: 46                                    INC SI
+[ 396]        :                                       
+[ 397]    0598: E2 F1                                 LOOP COPY_INPT
+[ 398]        :                                       
+[ 399]    059A:                                       END_COPY:
+[ 400]        :                                       
+[ 401]    059A: E8 0C FF                              CALL SEARCH_ITEM
+[ 402]        :                                       
+[ 403]    059D: C3                                    RET
+[ 404]        :                                       CHECK_ID ENDP
+[ 405]        :                                       
+[ 406]    059E:                                       INPUT_ITEM_DATAS PROC
+[ 407]        :                                       
+[ 408]    059E: A2 25 04                              MOV  CURRENT_SLOT, AL
+[ 409]        :                                       
+[ 410]    05A1: E8 9A FF                              CALL DISPLAY_SLOT
+[ 411]    05A4: C6 06 25 04 00                        MOV  CURRENT_SLOT, 0
+[ 412]    05A9: E8 84 FE                              CALL NEW_LINE
+[ 413]        :                                       
+[ 414]        :                                       ;PARAM
+[ 415]        :                                       
+[ 416]    05AC: B4 09                                 MOV AH, 09H
+[ 417]    05AE: BA 98 03                              LEA DX, PROMPT_ID
+[ 418]    05B1: CD 21                                 INT 21H
+[ 419]        :                                       
+[ 420]    05B3: B4 00                                 MOV AH, 0
+[ 421]    05B5: A0 26 04                              MOV AL, AVAILABLE_SLOT
+[ 422]        :                                       
+[ 423]    05B8: B7 00                                 MOV BH, 0
+[ 424]    05BA: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 425]        :                                       
+[ 426]    05BC: F7 E3                                 MUL BX
+[ 427]        :                                       
+[ 428]    05BE: B9 00 00                              MOV CX, 0
+[ 429]    05C1: B1 0A                                 MOV CL, MAX_ID_SIZE
+[ 430]        :                                       
+[ 431]    05C3: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 432]    05C6: 03 F0                                 ADD SI, AX
+[ 433]        :                                       
+[ 434]    05C8: E8 BA FE                              CALL INPUT_ITEM_DATA
+[ 435]        :                                       
+[ 436]    05CB: E8 A5 FF                              CALL CHECK_ID
+[ 437]        :                                       
+[ 438]    05CE: E8 6A FE                              CALL CLEAR_UTILS
+[ 439]        :                                       
+[ 440]    05D1: B0 01                                 MOV AL, 1
+[ 441]    05D3: 22 06 1F 04                           AND AL, FOUND
+[ 442]    05D7: 74 03 E9 27 03                        JNZ ID_ALREADY_EXIST
+[ 443]        :                                       
+[ 444]        :                                       ;PARAM
+[ 445]    05DC: B4 09                                 MOV AH, 09H
+[ 446]    05DE: BA 89 03                              LEA DX, PROMPT_NAME
+[ 447]    05E1: CD 21                                 INT 21H
+[ 448]        :                                       
+[ 449]    05E3: B4 00                                 MOV AH, 0
+[ 450]    05E5: A0 26 04                              MOV AL, AVAILABLE_SLOT
+[ 451]        :                                       
+[ 452]    05E8: B7 00                                 MOV BH, 0
+[ 453]    05EA: B3 28                                 MOV BL, MAX_NAME_SIZE
+[ 454]        :                                       
+[ 455]    05EC: F7 E3                                 MUL BX
+[ 456]        :                                       
+[ 457]    05EE: B9 00 00                              MOV CX, 0
+[ 458]    05F1: B1 28                                 MOV CL, MAX_NAME_SIZE
+[ 459]        :                                       
+[ 460]    05F3: BE 1A 02                              MOV SI, OFFSET ITEM_NAMES
+[ 461]    05F6: 03 F0                                 ADD SI, AX
+[ 462]        :                                       
+[ 463]    05F8: E8 8A FE                              CALL INPUT_ITEM_DATA
+[ 464]        :                                       
+[ 465]        :                                       ;PARAM
+[ 466]    05FB: B4 09                                 MOV AH, 09H
+[ 467]    05FD: BA AA 03                              LEA DX, PROMPT_QTY
+[ 468]    0600: CD 21                                 INT 21H
+[ 469]        :                                       
+[ 470]    0602: B4 00                                 MOV AH, 0
+[ 471]    0604: A0 26 04                              MOV AL, AVAILABLE_SLOT
+[ 472]        :                                       
+[ 473]    0607: B7 00                                 MOV BH, 0
+[ 474]    0609: B3 05                                 MOV BL, MAX_QTY_SIZE
+[ 475]        :                                       
+[ 476]    060B: F7 E3                                 MUL BX
+[ 477]        :                                       
+[ 478]    060D: B9 00 00                              MOV CX, 0
+[ 479]    0610: B1 05                                 MOV CL, MAX_QTY_SIZE
+[ 480]        :                                       
+[ 481]    0612: BE B0 02                              MOV SI, OFFSET ITEM_QTY
+[ 482]    0615: 03 F0                                 ADD SI, AX
+[ 483]        :                                       
+[ 484]    0617: E8 6B FE                              CALL INPUT_ITEM_DATA
+[ 485]        :                                       
+[ 486]    061A: B7 00                                 MOV BH, 0
+[ 487]    061C: 8A 1E 26 04                           MOV BL, AVAILABLE_SLOT
+[ 488]    0620: C6 06 26 04 00                        MOV AVAILABLE_SLOT, 0
+[ 489]    0625: C6 87 C9 02 01                        MOV TAKEN_LIST[BX], 1
+[ 490]        :                                       
+[ 491]        :                                       ;RETURN VALUES
+[ 492]    062A: FE 06 15 02                           INC  CURRENT_ITEM_COUNT
+[ 493]        :                                       
+[ 494]    062E: C3                                    RET
+[ 495]        :                                       
+[ 496]        :                                       INPUT_ITEM_DATAS ENDP
+[ 497]        :                                       
+[ 498]    062F:                                       UPDATE_ITEM_DATA PROC
+[ 499]        :                                       
+[ 500]    062F: B8 03 00                              MOV AX, 03H
+[ 501]    0632: CD 10                                 INT 10H
+[ 502]        :                                       
+[ 503]    0634: E8 29 FE                              CALL NAME_PROMPT
+[ 504]        :                                       
+[ 505]        :                                       ;PARAM
+[ 506]    0637: A1 22 04                              MOV AX, SEARCH_IND
+[ 507]    063A: B3 28                                 MOV BL, MAX_NAME_SIZE
+[ 508]    063C: F7 E3                                 MUL BX
+[ 509]        :                                       
+[ 510]    063E: BE 1A 02                              MOV SI, OFFSET ITEM_NAMES
+[ 511]    0641: 03 F0                                 ADD SI, AX
+[ 512]        :                                       
+[ 513]    0643: E8 BB 01                              CALL PRINT_ITEM_DATA
+[ 514]        :                                       
+[ 515]    0646: E8 E7 FD                              CALL NEW_LINE
+[ 516]        :                                       
+[ 517]    0649: E8 1C FE                              CALL ID_PROMPT
+[ 518]        :                                       
+[ 519]        :                                       ;PARAM
+[ 520]        :                                       
+[ 521]    064C: A1 22 04                              MOV AX, SEARCH_IND
+[ 522]    064F: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 523]    0651: F7 E3                                 MUL BX
+[ 524]        :                                       
+[ 525]    0653: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 526]    0656: 03 F0                                 ADD SI, AX
+[ 527]        :                                       
+[ 528]    0658: E8 A6 01                              CALL PRINT_ITEM_DATA
+[ 529]        :                                       
+[ 530]    065B: E8 D2 FD                              CALL NEW_LINE
+[ 531]        :                                       
+[ 532]    065E: E8 0F FE                              CALL QTY_PROMPT
+[ 533]        :                                       
+[ 534]        :                                       ;PARAM
+[ 535]        :                                       
+[ 536]    0661: A1 22 04                              MOV AX, SEARCH_IND
+[ 537]    0664: B3 05                                 MOV BL, MAX_QTY_SIZE
+[ 538]    0666: F7 E3                                 MUL BX
+[ 539]        :                                       
+[ 540]    0668: BE B0 02                              MOV SI, OFFSET ITEM_QTY
+[ 541]    066B: 03 F0                                 ADD SI, AX
+[ 542]        :                                       
+[ 543]    066D: E8 91 01                              CALL PRINT_ITEM_DATA
+[ 544]        :                                       
+[ 545]    0670: E8 BD FD                              CALL NEW_LINE
+[ 546]        :                                       
+[ 547]    0673: 8B 1E 22 04                           MOV BX, SEARCH_IND
+[ 548]    0677: 88 1E 25 04                           MOV CURRENT_SLOT, BL
+[ 549]    067B: E8 C0 FE                              CALL DISPLAY_SLOT
+[ 550]        :                                       
+[ 551]    067E: E8 AF FD                              CALL NEW_LINE
+[ 552]        :                                       
+[ 553]    0681: E8 D4 FD                              CALL UPDATE_MENU_PROMPT
+[ 554]    0684: E8 F9 FD                              CALL INPUT_PROMPT
+[ 555]        :                                       
+[ 556]    0687: A2 1E 04                              MOV CHOICE, AL
+[ 557]        :                                       
+[ 558]    068A: E8 A3 FD                              CALL NEW_LINE
+[ 559]        :                                       
+[ 560]    068D: 80 3E 1E 04 31                        CMP CHOICE, 31H
+[ 561]    0692: 74 10                                 JE UPDATE_ID
+[ 562]    0694: 80 3E 1E 04 32                        CMP CHOICE, 32H
+[ 563]    0699: 74 2D                                 JE UPDATE_NAME
+[ 564]    069B: 80 3E 1E 04 33                        CMP CHOICE, 33H
+[ 565]    06A0: 74 4A                                 JE UPDATE_QTY
+[ 566]        :                                       
+[ 567]    06A2: EB 6A                                 JMP END_UPDATE
+[ 568]        :                                       
+[ 569]    06A4:                                       UPDATE_ID:
+[ 570]        :                                       ;PARAM
+[ 571]    06A4: B4 09                                 MOV AH, 09H
+[ 572]    06A6: BA D5 03                              LEA DX, PROMPT_NEW_ID
+[ 573]    06A9: CD 21                                 INT 21H
+[ 574]        :                                       
+[ 575]    06AB: B4 00                                 MOV AH, 0
+[ 576]    06AD: A1 22 04                              MOV AX, SEARCH_IND
+[ 577]        :                                       
+[ 578]    06B0: B7 00                                 MOV BH, 0
+[ 579]    06B2: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 580]        :                                       
+[ 581]    06B4: F7 E3                                 MUL BX
+[ 582]        :                                       
+[ 583]    06B6: B9 00 00                              MOV CX, 0
+[ 584]    06B9: B1 0A                                 MOV CL, MAX_ID_SIZE
+[ 585]        :                                       
+[ 586]    06BB: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 587]    06BE: 03 F0                                 ADD SI, AX
+[ 588]        :                                       
+[ 589]    06C0: E8 C2 FD                              CALL INPUT_ITEM_DATA
+[ 590]    06C3: E8 86 FD                              CALL CLEAR_OLD_DATA
+[ 591]        :                                       
+[ 592]    06C6: EB 46                                 JMP END_UPDATE
+[ 593]        :                                       
+[ 594]    06C8:                                       UPDATE_NAME:
+[ 595]        :                                       
+[ 596]        :                                       ;PARAM
+[ 597]    06C8: B4 09                                 MOV AH, 09H
+[ 598]    06CA: BA BD 03                              LEA DX, PROMPT_NEW_NAME
+[ 599]    06CD: CD 21                                 INT 21H
+[ 600]        :                                       
+[ 601]    06CF: B4 00                                 MOV AH, 0
+[ 602]    06D1: A1 22 04                              MOV AX, SEARCH_IND
+[ 603]        :                                       
+[ 604]    06D4: B7 00                                 MOV BH, 0
+[ 605]    06D6: B3 28                                 MOV BL, MAX_NAME_SIZE
+[ 606]        :                                       
+[ 607]    06D8: F7 E3                                 MUL BX
+[ 608]        :                                       
+[ 609]    06DA: B9 00 00                              MOV CX, 0
+[ 610]    06DD: B1 28                                 MOV CL, MAX_NAME_SIZE
+[ 611]        :                                       
+[ 612]    06DF: BE 1A 02                              MOV SI, OFFSET ITEM_NAMES
+[ 613]    06E2: 03 F0                                 ADD SI, AX
+[ 614]        :                                       
+[ 615]    06E4: E8 9E FD                              CALL INPUT_ITEM_DATA
+[ 616]    06E7: E8 62 FD                              CALL CLEAR_OLD_DATA
+[ 617]        :                                       
+[ 618]    06EA: EB 22                                 JMP END_UPDATE
+[ 619]        :                                       
+[ 620]    06EC:                                       UPDATE_QTY:
+[ 621]        :                                       
+[ 622]        :                                       ;PARAM
+[ 623]    06EC: B4 09                                 MOV AH, 09H
+[ 624]    06EE: BA EB 03                              LEA DX, PROMPT_NEW_QTY
+[ 625]    06F1: CD 21                                 INT 21H
+[ 626]        :                                       
+[ 627]    06F3: B4 00                                 MOV AH, 0
+[ 628]    06F5: A1 22 04                              MOV AX, SEARCH_IND
+[ 629]        :                                       
+[ 630]    06F8: B7 00                                 MOV BH, 0
+[ 631]    06FA: B3 05                                 MOV BL, MAX_QTY_SIZE
+[ 632]        :                                       
+[ 633]    06FC: F7 E3                                 MUL BX
+[ 634]        :                                       
+[ 635]    06FE: B9 00 00                              MOV CX, 0
+[ 636]    0701: B1 05                                 MOV CL, MAX_QTY_SIZE
+[ 637]        :                                       
+[ 638]    0703: BE B0 02                              MOV SI, OFFSET ITEM_QTY
+[ 639]    0706: 03 F0                                 ADD SI, AX
+[ 640]        :                                       
+[ 641]    0708: E8 7A FD                              CALL INPUT_ITEM_DATA
+[ 642]    070B: E8 3E FD                              CALL CLEAR_OLD_DATA
+[ 643]        :                                       
+[ 644]    070E:                                       END_UPDATE:
+[ 645]        :                                       
+[ 646]    070E: C6 06 25 04 00                        MOV CURRENT_SLOT, 0
+[ 647]        :                                       
+[ 648]    0713: C6 06 1F 04 00                        MOV FOUND, 0
+[ 649]    0718: C7 06 22 04 00 00                     MOV SEARCH_IND, 0
+[ 650]        :                                       
+[ 651]    071E: E8 1A FD                              CALL CLEAR_UTILS
+[ 652]    0721: B4 01                                 MOV AH, 01H
+[ 653]    0723: CD 21                                 INT 21H
+[ 654]        :                                       
+[ 655]    0725: C3                                    RET
+[ 656]        :                                       UPDATE_ITEM_DATA ENDP
+[ 657]        :                                       
+[ 658]    0726:                                       PRINT_ITEM_DATAS PROC
+[ 659]        :                                       
+[ 660]    0726: B9 00 00                              MOV CX, 0
+[ 661]        :                                       
+[ 662]    0729:                                       PRINT_LOOP:
+[ 663]    0729: B4 09                                 MOV AH, 9H
+[ 664]    072B: BA 75 00                              LEA DX, SHELF
+[ 665]    072E: CD 21                                 INT 21H
+[ 666]    0730: E8 FD FC                              CALL NEW_LINE
+[ 667]        :                                       
+[ 668]    0733: BE C9 02                              MOV SI, OFFSET TAKEN_LIST
+[ 669]    0736: 03 F1                                 ADD SI, CX
+[ 670]    0738: 80 3C 00                              CMP [SI], 0
+[ 671]    073B: 75 03 E9 8C 00                        JE  EMPTY_SHELF
+[ 672]        :                                       
+[ 673]        :                                       ; MOVE CURSOR
+[ 674]    0740: B4 02                                 MOV AH, 02H
+[ 675]    0742: 8A 36 14 02                           MOV DH, SHELF_ROW
+[ 676]    0746: B2 02                                 MOV DL, SHELF_COL
+[ 677]    0748: CD 10                                 INT 10H
+[ 678]        :                                       
+[ 679]    074A: FE 06 14 02                           INC SHELF_ROW
+[ 680]        :                                       
+[ 681]    074E: E8 0F FD                              CALL NAME_PROMPT
+[ 682]        :                                       
+[ 683]        :                                       ;PARAM
+[ 684]    0751: B8 00 00                              MOV AX, 0
+[ 685]        :                                       
+[ 686]    0754: 8A C1                                 MOV AL, CL
+[ 687]    0756: BB 00 00                              MOV BX, 0
+[ 688]    0759: B3 28                                 MOV BL, MAX_NAME_SIZE
+[ 689]        :                                       
+[ 690]    075B: F7 E3                                 MUL BX
+[ 691]        :                                       
+[ 692]    075D: BE 1A 02                              MOV SI, OFFSET ITEM_NAMES
+[ 693]    0760: 03 F0                                 ADD SI, AX
+[ 694]        :                                       
+[ 695]    0762: E8 9C 00                              CALL PRINT_ITEM_DATA
+[ 696]        :                                       
+[ 697]        :                                       ; MOVE CURSOR
+[ 698]    0765: B4 02                                 MOV AH, 02H
+[ 699]    0767: 8A 36 14 02                           MOV DH, SHELF_ROW
+[ 700]    076B: B2 02                                 MOV DL, SHELF_COL
+[ 701]    076D: CD 10                                 INT 10H
+[ 702]        :                                       
+[ 703]    076F: FE 06 14 02                           INC SHELF_ROW
+[ 704]        :                                       
+[ 705]    0773: E8 F2 FC                              CALL ID_PROMPT
+[ 706]        :                                       
+[ 707]        :                                       ;PARAM
+[ 708]    0776: B8 00 00                              MOV AX, 0
+[ 709]    0779: 8A C1                                 MOV AL, CL
+[ 710]    077B: BB 00 00                              MOV BX, 0
+[ 711]    077E: B3 0A                                 MOV BL, MAX_ID_SIZE
+[ 712]        :                                       
+[ 713]    0780: F7 E3                                 MUL BX
+[ 714]        :                                       
+[ 715]    0782: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 716]    0785: 03 F0                                 ADD SI, AX
+[ 717]        :                                       
+[ 718]    0787: E8 77 00                              CALL PRINT_ITEM_DATA
+[ 719]        :                                       
+[ 720]        :                                       ; MOVE CURSOR
+[ 721]    078A: B4 02                                 MOV AH, 02H
+[ 722]    078C: 8A 36 14 02                           MOV DH, SHELF_ROW
+[ 723]    0790: B2 02                                 MOV DL, SHELF_COL
+[ 724]    0792: CD 10                                 INT 10H
+[ 725]        :                                       
+[ 726]    0794: FE 06 14 02                           INC SHELF_ROW
+[ 727]        :                                       
+[ 728]        :                                       ;PARAM
+[ 729]        :                                       
+[ 730]    0798: E8 D5 FC                              CALL QTY_PROMPT
+[ 731]        :                                       
+[ 732]    079B: B8 00 00                              MOV AX, 0
+[ 733]    079E: 8A C1                                 MOV AL, CL
+[ 734]    07A0: BB 00 00                              MOV BX, 0
+[ 735]    07A3: B3 05                                 MOV BL, MAX_QTY_SIZE
+[ 736]        :                                       
+[ 737]    07A5: F7 E3                                 MUL BX
+[ 738]        :                                       
+[ 739]    07A7: BE B0 02                              MOV SI, OFFSET ITEM_QTY
+[ 740]    07AA: 03 F0                                 ADD SI, AX
+[ 741]        :                                       
+[ 742]    07AC: E8 52 00                              CALL PRINT_ITEM_DATA
+[ 743]        :                                       
+[ 744]        :                                       ; MOVE CURSOR
+[ 745]    07AF: B4 02                                 MOV AH, 02H
+[ 746]    07B1: 8A 36 14 02                           MOV DH, SHELF_ROW
+[ 747]    07B5: B2 02                                 MOV DL, SHELF_COL
+[ 748]    07B7: CD 10                                 INT 10H
+[ 749]        :                                       
+[ 750]    07B9: FE 06 14 02                           INC SHELF_ROW
+[ 751]        :                                       
+[ 752]    07BD: E8 7E FD                              CALL DISPLAY_SLOT
+[ 753]        :                                       
+[ 754]    07C0: FE 06 18 02                           INC ITEM_PRINTED
+[ 755]    07C4: E8 69 FC                              CALL NEW_LINE
+[ 756]    07C7: E8 66 FC                              CALL NEW_LINE
+[ 757]    07CA: EB 05                                 JMP CONTINUE_PRINT
+[ 758]        :                                       
+[ 759]    07CC:                                       EMPTY_SHELF:
+[ 760]        :                                       
+[ 761]    07CC: 80 06 14 02 05                        ADD SHELF_ROW, 5
+[ 762]        :                                       
+[ 763]    07D1:                                       CONTINUE_PRINT:
+[ 764]        :                                       
+[ 765]    07D1: FE 06 25 04                           INC CURRENT_SLOT
+[ 766]        :                                       
+[ 767]    07D5: 80 06 14 02 03                        ADD SHELF_ROW, 3
+[ 768]        :                                       
+[ 769]    07DA: 8A 0E 25 04                           MOV CL, CURRENT_SLOT
+[ 770]        :                                       
+[ 771]    07DE: B7 00                                 MOV BH, 0
+[ 772]    07E0: 8A 1E 18 02                           MOV BL, ITEM_PRINTED
+[ 773]    07E4: 3A 1E 15 02                           CMP BL, CURRENT_ITEM_COUNT
+[ 774]        :                                       
+[ 775]    07E8: 74 03 E9 3C FF                        JNE PRINT_LOOP
+[ 776]        :                                       
+[ 777]    07ED: C6 06 18 02 00                        MOV ITEM_PRINTED, 0
+[ 778]    07F2: C6 06 25 04 00                        MOV CURRENT_SLOT, 0
+[ 779]        :                                       
+[ 780]    07F7: B4 01                                 MOV AH, 01H
+[ 781]    07F9: CD 21                                 INT 21H
+[ 782]        :                                       
+[ 783]    07FB: C6 06 14 02 02                        MOV SHELF_ROW, 2
+[ 784]        :                                       
+[ 785]    0800: C3                                    RET
+[ 786]        :                                       PRINT_ITEM_DATAS ENDP
+[ 787]        :                                       
+[ 788]    0801:                                       PRINT_ITEM_DATA PROC
+[ 789]    0801: B4 02                                 MOV AH, 02H
+[ 790]    0803:                                       PRINT_DATA:
+[ 791]    0803: 8A 14                                 MOV DL, [SI]
+[ 792]        :                                       
+[ 793]    0805: 80 FA 2A                              CMP DL, 42
+[ 794]    0808: 74 05                                 JE  END_PSD
+[ 795]        :                                       
+[ 796]    080A: CD 21                                 INT 21H
+[ 797]    080C: 46                                    INC SI
+[ 798]        :                                       
+[ 799]    080D: EB F4                                 JMP PRINT_DATA
+[ 800]        :                                       
+[ 801]    080F:                                       END_PSD:
+[ 802]    080F: C3                                    RET
+[ 803]        :                                       PRINT_ITEM_DATA ENDP
+[ 804]        :                                       
+[ 805]    0810:                                       REMOVE_ITEM PROC
+[ 806]        :                                       
+[ 807]    0810: A1 22 04                              MOV AX, SEARCH_IND
+[ 808]        :                                       
+[ 809]    0813: BB 00 00                              MOV BX, 0
+[ 810]    0816: BB 28 00                              MOV BX, MAX_NAME_SIZE
+[ 811]        :                                       
+[ 812]    0819: F7 E3                                 MUL BX
+[ 813]        :                                       
+[ 814]    081B: BE 1A 02                              MOV SI, OFFSET ITEM_NAMES
+[ 815]    081E: 03 F0                                 ADD SI, AX
+[ 816]        :                                       
+[ 817]    0820: E8 0F FD                              CALL DELETE_ITEM_DATA
+[ 818]        :                                       
+[ 819]    0823: A1 22 04                              MOV AX, SEARCH_IND
+[ 820]        :                                       
+[ 821]    0826: BB 00 00                              MOV BX, 0
+[ 822]    0829: BB 0A 00                              MOV BX, MAX_ID_SIZE
+[ 823]    082C: F7 E3                                 MUL BX
+[ 824]        :                                       
+[ 825]    082E: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 826]    0831: 03 F0                                 ADD SI, AX
+[ 827]        :                                       
+[ 828]    0833: E8 FC FC                              CALL DELETE_ITEM_DATA
+[ 829]        :                                       
+[ 830]    0836: E8 F7 FB                              CALL NEW_LINE
+[ 831]        :                                       
+[ 832]    0839: FE 0E 15 02                           DEC CURRENT_ITEM_COUNT
+[ 833]        :                                       
+[ 834]    083D: 8B 1E 22 04                           MOV BX, SEARCH_IND
+[ 835]    0841: C6 87 C9 02 00                        MOV TAKEN_LIST[BX], 0
+[ 836]        :                                       
+[ 837]    0846: B4 09                                 MOV AH, 09H
+[ 838]    0848: BA 28 00                              LEA DX, ITEM_DELETED_MSG
+[ 839]    084B: CD 21                                 INT 21H
+[ 840]        :                                       
+[ 841]    084D: B4 01                                 MOV AH, 01H
+[ 842]    084F: CD 21                                 INT 21H
+[ 843]        :                                       
+[ 844]    0851: E8 E7 FB                              CALL CLEAR_UTILS
+[ 845]        :                                       
+[ 846]    0854: C6 06 1F 04 00                        MOV FOUND, 0
+[ 847]    0859: C7 06 22 04 00 00                     MOV SEARCH_IND, 0
+[ 848]        :                                       
+[ 849]    085F: C3                                    RET
+[ 850]        :                                       REMOVE_ITEM ENDP
+[ 851]        :                                       
+[ 852]    0860:                                       MAIN PROC
+[ 853]        :                                       
+[ 854]    0860: B8 00 00                              MOV AX, @DATA
+[ 855]    0863: 8E D8                                 MOV DS, AX
+[ 856]        :                                       
+[ 857]    0865:                                       MENU_INTERFACE:
+[ 858]        :                                       
+[ 859]    0865: B8 03 00                              MOV AX, 03H
+[ 860]    0868: CD 10                                 INT 10H
+[ 861]        :                                       
+[ 862]    086A: E8 0B FC                              CALL MENU
+[ 863]        :                                       
+[ 864]    086D: E8 10 FC                              CALL INPUT_PROMPT
+[ 865]        :                                       
+[ 866]    0870: A2 1E 04                              MOV CHOICE, AL
+[ 867]        :                                       
+[ 868]    0873: E8 BA FB                              CALL NEW_LINE
+[ 869]        :                                       
+[ 870]    0876: 80 3E 1E 04 31                        CMP CHOICE, 31H
+[ 871]    087B: 74 21                                 JE  INPUT_ITEM_DATA_LABEL
+[ 872]    087D: 80 3E 1E 04 32                        CMP CHOICE, 32H
+[ 873]    0882: 74 2F                                 JE  UPDATE_ITEM_DATA_LABEL
+[ 874]    0884: 80 3E 1E 04 33                        CMP CHOICE, 33H
+[ 875]    0889: 74 45                                 JE  PRINT_ITEM_DATA_LABEL
+[ 876]    088B: 80 3E 1E 04 34                        CMP CHOICE, 34H
+[ 877]    0890: 74 56                                 JE  REMOVE_ITEM_LABEL
+[ 878]    0892: 80 3E 1E 04 35                        CMP CHOICE, 35H
+[ 879]    0897: 75 03 E9 D9 00                        JE  EXIT
+[ 880]    089C: EB C7                                 JMP MENU_INTERFACE
+[ 881]        :                                       
+[ 882]    089E:                                       INPUT_ITEM_DATA_LABEL:
+[ 883]        :                                       
+[ 884]    089E: E8 8F FB                              CALL NEW_LINE
+[ 885]        :                                       
+[ 886]    08A1: E8 74 FC                              CALL SEARCH_SLOT
+[ 887]        :                                       
+[ 888]    08A4: A0 26 04                              MOV  AL, AVAILABLE_SLOT
+[ 889]        :                                       
+[ 890]    08A7: 3C 03                                 CMP AL, MAX_ITEM_COUNT
+[ 891]    08A9: 75 03 E9 A5 00                        JE  FULL_PARKING
+[ 892]        :                                       
+[ 893]    08AE: E8 ED FC                              CALL INPUT_ITEM_DATAS
+[ 894]        :                                       
+[ 895]    08B1: EB B2                                 JMP MENU_INTERFACE
+[ 896]        :                                       
+[ 897]    08B3:                                       UPDATE_ITEM_DATA_LABEL:
+[ 898]        :                                       
+[ 899]    08B3: 80 3E 15 02 00                        CMP  CURRENT_ITEM_COUNT, 0
+[ 900]    08B8: 75 03 E9 A7 00                        JE   EMPTY_REGISTRY
+[ 901]        :                                       
+[ 902]    08BD: E8 D3 FB                              CALL SEARCH_PROMPT
+[ 903]        :                                       
+[ 904]    08C0: E8 6D FB                              CALL NEW_LINE
+[ 905]        :                                       
+[ 906]    08C3: B0 01                                 MOV AL, 1
+[ 907]    08C5: 22 06 1F 04                           AND AL, FOUND
+[ 908]    08C9: 74 69                                 JZ  NOT_FOUND
+[ 909]        :                                       
+[ 910]    08CB: E8 61 FD                              CALL UPDATE_ITEM_DATA
+[ 911]        :                                       
+[ 912]    08CE: EB 95                                 JMP MENU_INTERFACE
+[ 913]        :                                       
+[ 914]    08D0:                                       PRINT_ITEM_DATA_LABEL:
+[ 915]        :                                       
+[ 916]    08D0: E8 5D FB                              CALL NEW_LINE
+[ 917]        :                                       
+[ 918]    08D3: B8 03 00                              MOV AX, 03H
+[ 919]    08D6: CD 10                                 INT 10H
+[ 920]        :                                       
+[ 921]    08D8: 80 3E 15 02 00                        CMP  CURRENT_ITEM_COUNT, 0
+[ 922]    08DD: 75 03 E9 82 00                        JE   EMPTY_REGISTRY
+[ 923]        :                                       
+[ 924]    08E2: E8 41 FE                              CALL PRINT_ITEM_DATAS
+[ 925]        :                                       
+[ 926]    08E5: E9 7D FF                              JMP MENU_INTERFACE
+[ 927]        :                                       
+[ 928]    08E8:                                       REMOVE_ITEM_LABEL:
+[ 929]        :                                       
+[ 930]    08E8: E8 45 FB                              CALL NEW_LINE
+[ 931]        :                                       
+[ 932]    08EB: 80 3E 15 02 00                        CMP  CURRENT_ITEM_COUNT, 0
+[ 933]    08F0: 74 72                                 JE   EMPTY_REGISTRY
+[ 934]        :                                       
+[ 935]    08F2: E8 9E FB                              CALL SEARCH_PROMPT
+[ 936]        :                                       
+[ 937]    08F5: B0 01                                 MOV AL, 1
+[ 938]    08F7: 22 06 1F 04                           AND AL, FOUND
+[ 939]    08FB: 74 37                                 JZ  NOT_FOUND
+[ 940]        :                                       
+[ 941]    08FD: E8 10 FF                              CALL REMOVE_ITEM
+[ 942]        :                                       
+[ 943]    0900: E9 62 FF                              JMP MENU_INTERFACE
+[ 944]        :                                       
+[ 945]        :                                       
+[ 946]    0903:                                       ID_ALREADY_EXIST:
+[ 947]    0903: E8 2A FB                              CALL NEW_LINE
+[ 948]        :                                       
+[ 949]    0906: B4 09                                 MOV AH, 09H
+[ 950]    0908: BA 62 00                              LEA DX, ALREADY_EXIST_MSG
+[ 951]    090B: CD 21                                 INT 21H
+[ 952]        :                                       
+[ 953]    090D: B4 01                                 MOV AH, 01H
+[ 954]    090F: CD 21                                 INT 21H
+[ 955]        :                                       
+[ 956]    0911: B4 00                                 MOV AH, 0
+[ 957]    0913: A0 26 04                              MOV AL, AVAILABLE_SLOT
+[ 958]        :                                       
+[ 959]    0916: BB 00 00                              MOV BX, 0
+[ 960]    0919: BB 0A 00                              MOV BX, MAX_ID_SIZE
+[ 961]    091C: F7 E3                                 MUL BX
+[ 962]        :                                       
+[ 963]    091E: BE 92 02                              MOV SI, OFFSET ITEM_IDS
+[ 964]    0921: 03 F0                                 ADD SI, AX
+[ 965]        :                                       
+[ 966]    0923: E8 0C FC                              CALL DELETE_ITEM_DATA
+[ 967]        :                                       
+[ 968]    0926: C6 06 1F 04 00                        MOV FOUND, 0
+[ 969]    092B: C7 06 22 04 00 00                     MOV SEARCH_IND, 0
+[ 970]        :                                       
+[ 971]    0931: E9 31 FF                              JMP MENU_INTERFACE
+[ 972]        :                                       
+[ 973]    0934:                                       NOT_FOUND:
+[ 974]    0934: E8 F9 FA                              CALL NEW_LINE
+[ 975]        :                                       
+[ 976]    0937: B4 09                                 MOV AH, 09H
+[ 977]    0939: BA 19 00                              LEA DX, NOT_FOUND_MSG
+[ 978]    093C: CD 21                                 INT 21H
+[ 979]        :                                       
+[ 980]    093E: B4 01                                 MOV AH, 01H
+[ 981]    0940: CD 21                                 INT 21H
+[ 982]        :                                       
+[ 983]    0942: E8 F6 FA                              CALL CLEAR_UTILS
+[ 984]        :                                       
+[ 985]    0945: C6 06 1F 04 00                        MOV FOUND, 0
+[ 986]    094A: C7 06 22 04 00 00                     MOV SEARCH_IND, 0
+[ 987]        :                                       
+[ 988]    0950: E9 12 FF                              JMP MENU_INTERFACE
+[ 989]        :                                       
+[ 990]    0953:                                       FULL_PARKING:
+[ 991]    0953: E8 DA FA                              CALL NEW_LINE
+[ 992]        :                                       
+[ 993]    0956: B4 09                                 MOV AH, 09H
+[ 994]    0958: BA 4C 00                              LEA DX, FULL_LOT_MSG
+[ 995]    095B: CD 21                                 INT 21H
+[ 996]        :                                       
+[ 997]    095D: B4 01                                 MOV AH, 01H
+[ 998]    095F: CD 21                                 INT 21H
+[ 999]        :                                       
+[1000]    0961: E9 01 FF                              JMP MENU_INTERFACE
+[1001]        :                                       
+[1002]    0964:                                       EMPTY_REGISTRY:
+[1003]    0964: E8 C9 FA                              CALL NEW_LINE
+[1004]        :                                       
+[1005]    0967: B4 09                                 MOV AH, 09H
+[1006]    0969: BA 35 00                              LEA DX, EMPTY_REGISTRY_MSG
+[1007]    096C: CD 21                                 INT 21H
+[1008]        :                                       
+[1009]    096E: B4 01                                 MOV AH, 01H
+[1010]    0970: CD 21                                 INT 21H
+[1011]        :                                       
+[1012]    0972: E9 F0 FE                              JMP MENU_INTERFACE
+[1013]        :                                       
+[1014]    0975:                                       EXIT:
+[1015]    0975: B4 4C                                 MOV AH, 4CH
+[1016]    0977: CD 21                                 INT 21H
+[1017]        :                                       
+[1018]        :                                       END MAIN
+[1019]        :                                       
+ 
+===================================================================================================
+ 
+EXE HEADER - bytes from 0000 to 01FF inclusive.
+
+0000: 4D      -   exe signature (M)
+0001: 5A      -   exe signature (Z)
+0002: 79      -   bytes on last page (l.byte)
+0003: 01      -   bytes on last page (h.byte)
+0004: 06      -   512 byte pages in file (l.byte)
+0005: 00      -   512 byte pages in file (h.byte)
+0006: 01      -   relocations (l.byte)
+0007: 00      -   relocations (h.byte)
+0008: 20      -   paragraphs in header (l.byte)
+0009: 00      -   paragraphs in header (h.byte)
+000A: 00      -   minimum memory (l.byte)
+000B: 00      -   minimum memory (h.byte)
+000C: FF      -   maximum memory (l.byte)
+000D: FF      -   maximum memory (h.byte)
+000E: 00      -   SS - stack segment (l.byte)
+000F: 00      -   SS - stack segment (h.byte)
+0010: 00      -   SP - stack pointer (l.byte)
+0011: 00      -   SP - stack pointer (h.byte)
+0012: B0      -   check sum (l.byte)
+0013: CA      -   check sum (h.byte)
+0014: 30      -   IP - instruction pointer (l.byte)
+0015: 04      -   IP - instruction pointer (h.byte)
+0016: 43      -   CS - code segment (l.byte)
+0017: 00      -   CS - code segment (h.byte)
+0018: 1E      -   relocation table adress (l.byte)
+0019: 00      -   relocation table adress (h.byte)
+001A: 00      -   overlay number (l.byte)
+001B: 00      -   overlay number (h.byte)
+001C: 01      -   signature (l.byte)
+001D: 00      -   signature (h.byte)
+001E: 31      -   relocation table - offset inside segment (l.byte)
+001F: 04      -   relocation table - offset inside segment (h.byte)
+0020: 43      -   relocation table - segment anchor (l.byte)
+0021: 00      -   relocation table - segment anchor (h.byte)
+0022 to 01FF  -   reserved relocation area  (00) 
+
+
+
+
+===================================================================================================
